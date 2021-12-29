@@ -1,6 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
 
+import {createConnection} from "typeorm";
+
 import { loginRouter } from "./routes/loginRoutes";
 import { registerRouter } from "./routes/registerRoutes";
 import { deckRouter } from "./routes/deckRoutes";
@@ -8,6 +10,14 @@ import { userRouter } from "./routes/userRoutes";
 
 dotenv.config();
 const app = express();
+
+createConnection({
+    type: 'sqlite',
+    database: "./devData/dev.db",
+    logging: true,
+    synchronize: true,
+    entities:[]
+})
 
 app.use(loginRouter);
 app.use(registerRouter);
