@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 
 import {createConnection} from "typeorm";
+import { User } from "./models/User";
 
 import { loginRouter } from "./routes/loginRoutes";
 import { registerRouter } from "./routes/registerRoutes";
@@ -14,10 +15,12 @@ const app = express();
 createConnection({
     type: 'sqlite',
     database: "./devData/dev.db",
-    logging: true,
+    logging: false,
     synchronize: true,
-    entities:[]
+    entities:[User]
 })
+
+app.use(express.json());
 
 app.use(loginRouter);
 app.use(registerRouter);
@@ -25,7 +28,7 @@ app.use(deckRouter);
 app.use(userRouter);
 
 app.get("/", (req,res)=>{
-    res.json({indexEndpoint:"test"})
+    return res.json({indexEndpoint:"test"})
 })
 
 app.listen(process.env.PORT,()=>{

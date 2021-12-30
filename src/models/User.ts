@@ -5,13 +5,13 @@ class User extends BaseEntity{
     @PrimaryGeneratedColumn()
     id:number;
 
-    @Column()
+    @Column({unique:true, nullable: false})
     email: string;
 
-    @Column()
+    @Column({unique:true, nullable: false})
     username: string;
 
-    @Column()
+    @Column({nullable: false})
     password: string; // this is a placeholder, need to store hased check if it is type of string
 }
 
