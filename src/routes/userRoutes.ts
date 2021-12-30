@@ -15,7 +15,7 @@ userRouter.route("/user/byID/:id")
         const personToDelete = await User.findOne(varifiedUserID);
         const user = await User.delete(varifiedUserID);
         if(user.affected == 0){
-            return res.status(500).send("Error: Could not delete")
+            return res.status(500).send("Error: Could not delete user")
         }
         return res.json(personToDelete);
     })

@@ -1,4 +1,5 @@
-import {Entity, PrimaryGeneratedColumn, Column, BaseEntity} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany} from "typeorm";
+import { Deck } from "./Deck";
 
 @Entity()
 class User extends BaseEntity{
@@ -12,7 +13,16 @@ class User extends BaseEntity{
     username: string;
 
     @Column({nullable: false})
-    password: string; // this is a placeholder, need to store hased check if it is type of string
+    password: string;
+
+    @Column({nullable: false})
+    role: string;
+
+    @OneToMany(()=> Deck, deck => deck.user,{
+        eager: false, // will not fetch every deck from user automatically
+        cascade:["insert"] // when a deck is given saved to a user, it will auto insert in deck
+    })
+    decks: Deck[];
 }
 
 export {User};

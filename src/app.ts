@@ -2,12 +2,16 @@ import express from "express";
 import dotenv from "dotenv";
 
 import {createConnection} from "typeorm";
+
 import { User } from "./models/User";
+import { Deck } from "./models/Deck";
+import { Card } from "./models/Card";
 
 import { loginRouter } from "./routes/loginRoutes";
 import { registerRouter } from "./routes/registerRoutes";
 import { deckRouter } from "./routes/deckRoutes";
 import { userRouter } from "./routes/userRoutes";
+import { cardRouter } from "./routes/cardRoutes"
 
 dotenv.config();
 const app = express();
@@ -17,7 +21,7 @@ createConnection({
     database: "./devData/dev.db",
     logging: false,
     synchronize: true,
-    entities:[User]
+    entities:[User,Deck,Card]
 })
 
 app.use(express.json());
@@ -26,6 +30,7 @@ app.use(loginRouter);
 app.use(registerRouter);
 app.use(deckRouter);
 app.use(userRouter);
+app.use(cardRouter);
 
 app.get("/", (req,res)=>{
     return res.json({indexEndpoint:"test"})
