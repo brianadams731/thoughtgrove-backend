@@ -11,7 +11,7 @@ userRouter.route("/user/byID/:id")
         }
         return res.send(person);
     }).delete(async(req,res)=>{
-        const varifiedUserID:number = parseInt(req.params.id)  // TODO VERIFY THAT THIS IS THE USER SENDING THIS ID!!!!!
+        const varifiedUserID:number = parseInt(req.params.id)  // TODO USE ID STORED IN SESSION!!!!!
         const personToDelete = await User.findOne(varifiedUserID);
         const user = await User.delete(varifiedUserID);
         if(user.affected == 0){
