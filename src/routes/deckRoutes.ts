@@ -1,6 +1,7 @@
 import express from "express";
 import { User } from "../models/User";
 import { Deck } from "../models/Deck";
+import { requireWithUserAsync } from "../middleware/requireWithUserAsync";
 
 const deckRouter = express.Router();
 
@@ -24,17 +25,14 @@ deckRouter.route("/deck/byID/:id")
         }
         return res.json(deck);
     })
-    // TODO add a post request here instead of the /add endpoint!!!!
 
-    deckRouter.post(("/deck/add"),async(req,res)=>{
-        const userIDPlaceholder = req.body.userIdPlaceholder;
-        // TODO CHECK AUTH
-        // TODO CHANGE USER
-        // THIS NEED TO BE CHAGED TO WORK WITH MIDDLEWARE WHEN ADDED
-        // MAKE SURE USER IS AUTORISED TO ADD DECK
-        const user = await User.findOne(userIDPlaceholder,{
+    deckRouter.post(("/deck/add"),requireWithUserAsync,async(req,res)=>{
+        const userID = req.user?.id;
+                
+        const user = await User.findOne(userID,{
             relations:["decks"]
         })
+
         if(!user){
             return res.status(401).send("Error: User not found");
         }
