@@ -28,7 +28,7 @@ deckRouter.route("/deck/byID/:id")
 
     deckRouter.post(("/deck/add"),requireWithUserAsync,async(req,res)=>{
         const userID = req.user?.id;
-                
+        console.log(req.user);
         const user = await User.findOne(userID,{
             relations:["decks"]
         })

@@ -14,7 +14,7 @@ const sessionConfig: SessionOptions  = {
     name: "userSession",
     secret: process.env.COOKIE_SECRET as string,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     store: new MemoryStore,
     genid: function(req){
         return uuidv4();
