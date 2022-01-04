@@ -7,15 +7,14 @@ const loginRouter = express.Router();
 loginRouter.route("/login")
     .post(async(req,res) =>{
         if(req.session.userID){
-            console.log("already logged in")
-            return res.redirect("/");
+            return res.status(500).send("Error: User Already Loged In");
         }
         const loginCred = req.body;
         const user = await User.findOne({
             select:["email","password","id"],
             where:{email:loginCred.email}
         });
-        // Check for user ahead to save hashing against an invalid user
+        // Checking for user ahead to save hashing against an invalid user
         if(!user){
             return res.status(401).send("Error: Invalid Credentials")
         
@@ -27,7 +26,7 @@ loginRouter.route("/login")
         }else{
             req.session.userID = user.id;
             // TODO set correct redirect
-            return res.redirect("/");
+            return res.json(user);
         }
     })
 

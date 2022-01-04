@@ -13,6 +13,9 @@ class Deck extends BaseEntity{
     @Column({nullable: true})
     description: string;
 
+    @Column({nullable:false, default:true})
+    public: boolean;
+
     @ManyToOne(()=> User, user => user.decks, {
         eager:false, // Will not fetch user everytime the deck is fetched
         onDelete: 'CASCADE', // When user gets deleted, the deck will be deleted
