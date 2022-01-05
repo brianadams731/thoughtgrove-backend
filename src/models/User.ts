@@ -1,4 +1,5 @@
 import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany} from "typeorm";
+import { CommentDeck } from "./CommentDeck";
 import { Deck } from "./Deck";
 
 @Entity()
@@ -23,6 +24,11 @@ class User extends BaseEntity{
         cascade:["insert"] // when a deck is given saved to a user, it will auto insert in deck
     })
     decks: Deck[];
+
+    @OneToMany(()=> CommentDeck, commentsDeck => commentsDeck.user, {
+        eager: false,
+    })
+    commentsDeck: CommentDeck[];
 }
 
 export {User};

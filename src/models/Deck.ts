@@ -1,5 +1,6 @@
 import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, OneToMany} from "typeorm";
 import { Card } from "./Card";
+import { CommentDeck } from "./CommentDeck";
 import { User } from "./User";
 
 @Entity()
@@ -27,6 +28,12 @@ class Deck extends BaseEntity{
         cascade:["insert"] // When cards get inserted into the deck, they will atuomatically be inserted in card table
     })
     cards: Card[];
+
+    @OneToMany(()=>CommentDeck, commentDeck => commentDeck.deck, {
+        eager:false,
+        cascade:["insert"] // When comments get inserted into deck, they will be automatically inserted into comment table
+    })
+    comments: CommentDeck[];
 }
 
 export {Deck};

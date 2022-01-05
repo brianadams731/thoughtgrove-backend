@@ -12,6 +12,7 @@ import { deckRouter } from "./routes/deckRoutes";
 import { userRouter } from "./routes/userRoutes";
 import { cardRouter } from "./routes/cardRoutes"
 import { logoutRouter } from "./routes/logoutRoutes";
+import { commentRouter } from "./routes/commentsRoutes";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use(deckRouter);
 app.use(userRouter);
 app.use(cardRouter);
 app.use(logoutRouter);
+app.use(commentRouter);
 
 app.get("/", (req,res)=>{
     return res.send("test endpoint")

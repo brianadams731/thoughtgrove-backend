@@ -4,11 +4,11 @@ import { v4 as uuidv4 } from 'uuid';
 dotenv.config();
 
 // USED TO ADD FIELDS TO SESSION OBJECT ie req.session.userID!
-declare module "express-session" {
+/*declare module "express-session" {
     interface Session {
         userID: number;
     }
-}
+*/
 
 const sessionConfig: SessionOptions  = {
     name: "userSession",
