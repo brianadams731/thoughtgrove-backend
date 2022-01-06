@@ -1,6 +1,7 @@
 import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany} from "typeorm";
 import { CommentDeck } from "./CommentDeck";
 import { Deck } from "./Deck";
+import { VotesDeck } from "./VotesDeck";
 
 @Entity()
 class User extends BaseEntity{
@@ -29,6 +30,11 @@ class User extends BaseEntity{
         eager: false,
     })
     commentsDeck: CommentDeck[];
+
+    @OneToMany(()=> VotesDeck, votesDeck => votesDeck.user,{
+        eager:false
+    })
+    votesDeck: VotesDeck[];
 }
 
 export {User};

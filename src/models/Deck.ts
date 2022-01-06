@@ -2,6 +2,7 @@ import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, OneToMany
 import { Card } from "./Card";
 import { CommentDeck } from "./CommentDeck";
 import { User } from "./User";
+import { VotesDeck } from "./VotesDeck";
 
 @Entity()
 class Deck extends BaseEntity{
@@ -34,6 +35,12 @@ class Deck extends BaseEntity{
         cascade:["insert"] // When comments get inserted into deck, they will be automatically inserted into comment table
     })
     comments: CommentDeck[];
+
+    @OneToMany(()=>VotesDeck, votesDeck => votesDeck.deck, {
+        eager:false,
+        cascade: ["insert"]
+    })
+    votes: VotesDeck[]
 }
 
 export {Deck};

@@ -13,6 +13,7 @@ import { userRouter } from "./routes/userRoutes";
 import { cardRouter } from "./routes/cardRoutes"
 import { logoutRouter } from "./routes/logoutRoutes";
 import { commentRouter } from "./routes/commentsRoutes";
+import { votesRouter } from "./routes/votesRoutes";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use(userRouter);
 app.use(cardRouter);
 app.use(logoutRouter);
 app.use(commentRouter);
+app.use(votesRouter);
 
 app.get("/", (req,res)=>{
     return res.send("test endpoint")
