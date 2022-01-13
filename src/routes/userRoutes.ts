@@ -13,6 +13,15 @@ userRouter.get("/user/byID/:id", async(req,res)=>{
     return res.json(person);
 })
 
+userRouter.get("/owner", requireWithUserAsync ,async(req,res)=>{
+    return res.json({
+        id:req.user?.id,
+        email: req.user?.email,
+        username: req.user?.username,
+        role: req.user?.role
+    });
+})
+
 userRouter.delete("/user/delete", requireWithUserAsync, async(req,res)=>{
     const userToDelete = req.user;
     if(!userToDelete){
