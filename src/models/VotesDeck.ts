@@ -19,7 +19,7 @@ class VotesDeck extends BaseEntity{
 
     @ManyToOne(()=> User, user => user.votesDeck, {
         eager:false,
-        onDelete: 'CASCADE', // When user gets deleted, the comment will be deleted
+        onDelete: 'CASCADE', // When user gets deleted, the vote will be deleted
         nullable: false
     })
     user: User;

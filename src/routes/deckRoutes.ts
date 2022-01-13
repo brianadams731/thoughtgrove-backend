@@ -3,6 +3,8 @@ import { User } from "../models/User";
 import { Deck } from "../models/Deck";
 import { requireWithUserAsync } from "../middleware/requireWithUserAsync";
 import {withUserAsync} from "../middleware/withUserAsync"
+import { getRepository } from "typeorm";
+import { IPopularDeck } from "../responseInterfaces/IPopularDeck";
 
 const deckRouter = express.Router();
 
@@ -69,6 +71,25 @@ deckRouter.get("/deck/allByUserID/:userID",withUserAsync,async(req,res)=>{
         return deck.public || userSearched.id === req.user?.id;
     })
     return res.json(decks);
+})
+
+deckRouter.get("/deck/popular", withUserAsync ,async(req,res)=>{
+    const popularDecks:IPopularDeck[] = await getRepository(Deck).createQueryBuilder("deck")
+    .select(["deck.id", "deck.title", "deck.description","user.id","user.username"/*,"votes.isUpVote"*/])
+    .leftJoin("deck.user", "user")
+    //.leftJoin("deck.votes", "votes")
+    .where("deck.public = true")
+    .getMany()
+
+    popularDecks.forEach((item)=>{
+        if(item.user.id === req.user?.id){
+            item.deckRelation = "owner" 
+        }else{
+            item.deckRelation = "guest"
+        }
+    })
+    
+    return res.json(popularDecks);
 })
 
 export {deckRouter};
