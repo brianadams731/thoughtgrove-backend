@@ -8,10 +8,10 @@ class Card extends BaseEntity{
     id:number;
 
     @Column({nullable: true})
-    front: string;
+    prompt: string;
 
     @Column({nullable: true})
-    back: string;
+    answer: string;
 
     @ManyToOne(()=> Deck, deck => deck.cards, {
         eager: false, // will not fetch deck with every card

@@ -1,12 +1,15 @@
 import express from "express";
+import { getRepository } from "typeorm";
 import { requireWithUserAsync } from "../middleware/requireWithUserAsync";
 import { withUserAsync } from "../middleware/withUserAsync";
 import { Card } from "../models/Card";
 import { Deck } from "../models/Deck";
+import { ICardResponse } from "../responseInterfaces/ICard";
 
 
 const cardRouter = express.Router();
 
+// Are these routes needed?
 cardRouter.route('/card/byID/:cardID')
     .get(withUserAsync, async(req,res)=>{
         const validCardID = parseInt(req.params.cardID);
@@ -38,19 +41,25 @@ cardRouter.route('/card/byID/:cardID')
         return res.json(card);
     })
 
+
 cardRouter.route('/card/byDeckID/:deckID')
-    .get(withUserAsync,async (req,res)=>{
+    .get(withUserAsync, withUserAsync, async (req,res)=>{
         const validDeckID = parseInt(req.params.deckID);
-        const deck = await Deck.findOne(validDeckID, {
-            relations:["cards", "user"]
-        });
-        if(!deck){
-            return res.status(500).send("Error: Deck not found");
+        const selectedDeck = await getRepository(Deck).createQueryBuilder("deck")
+        .select(["card.id", "card.prompt", "card.answer","deck.id"])
+        .where("deck.id = :deckID and (deck.user.id = :userID or deck.public = true)",{deckID: validDeckID, userID: req.user? req.user.id:-1})
+        .leftJoin("deck.cards","card")
+        .getOne();
+        
+        if(!selectedDeck){
+            return res.status(500).send("Error: No Cards Found")
         }
-        if(deck.public || deck.user.id === req.user?.id){
-            return res.json(deck);
+        
+        const cards:ICardResponse = {
+            deckID: selectedDeck.id,
+            cards: selectedDeck.cards
         }
-        return res.status(403).send("Error: Invalid Credentials");
+        res.json(cards);
         
     }).post(requireWithUserAsync ,async (req,res)=>{
         const validDeckID = parseInt(req.params.deckID);
@@ -64,8 +73,8 @@ cardRouter.route('/card/byDeckID/:deckID')
             return res.status(403).send("Error: Invalid Credentials")
         }
         const card = new Card();
-        card.front = req.body.front;
-        card.back = req.body.back;
+        card.prompt = req.body.prompt;
+        card.answer = req.body.answer;
 
         deck.cards.push(card);
         await deck.save();
