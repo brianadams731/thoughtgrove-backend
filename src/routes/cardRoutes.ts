@@ -32,7 +32,7 @@ cardRouter.route('/card/byID/:cardID')
             return res.status(404).send("Error: Invalid Card");
         }
         if(card?.deck?.user?.id !== req.user?.id){
-            return res.status(403).send("Error: Not authroized");
+            return res.status(403).send("Error: Not authorized");
         }
         const cardToDelete = await Card.delete(validCardID);
         if(cardToDelete.affected === 0){

@@ -6,6 +6,8 @@ import {withUserAsync} from "../middleware/withUserAsync"
 import { getRepository } from "typeorm";
 import { IDeck } from "../responseInterfaces/IDeck";
 import { mapDeckRelation } from "../utils/mapDeckRelation";
+import { calcDeckVotesAsync } from "../utils/calcDeckVotes";
+import { determineUserVotedOnDeckAsync } from "../utils/detrmineUserVotedOnDeck";
 
 const deckRouter = express.Router();
 
@@ -16,7 +18,6 @@ deckRouter.route("/deck/byID/:id")
         const deck: IDeck|undefined = await getRepository(Deck).createQueryBuilder("deck")
         .select(["deck.id", "deck.title", "deck.subject", "deck.description", "user.id", "user.username"/*,"votes.isUpVote"*/])
         .leftJoin("deck.user", "user")
-        //.leftJoin("deck.votes", "votes")
         .where("deck.id = :deckID and (deck.public = true or user.id = :userID)",{deckID: verifiedDeckNumber, userID: req.user? req.user.id : -1})
         .getOne()
         
@@ -25,8 +26,12 @@ deckRouter.route("/deck/byID/:id")
         }
 
         deck.deckRelation = mapDeckRelation(deck, req.user);
-        return res.json(deck) ;
+        deck.vote = {
+            count: await calcDeckVotesAsync(deck.id),
+            voteCast: await determineUserVotedOnDeckAsync(req.user?.id)
+        }
 
+        return res.json(deck) ;
     }).delete(requireWithUserAsync, async(req,res)=>{
         const verifiedDeckNumber = parseInt(req.params.id);
         const deck = await Deck.findOne(verifiedDeckNumber, {

@@ -10,8 +10,11 @@ class VotesDeck extends BaseEntity{
     @Column({nullable: false})
     isUpVote: boolean;
 
+    @Column({nullable: false})
+    userId: number;
+    
     @ManyToOne(()=> Deck, deck => deck.votes, {
-        eager:false, // Will not fetch user everytime the deck is fetched
+        eager:false, // Will not fetch user every time the deck is fetched
         onDelete: 'CASCADE', // When deck gets deleted, the comment will be deleted
         nullable: false
     })
