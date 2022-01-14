@@ -59,18 +59,19 @@ votesRouter.route("/votes/byDeckID/:deckID")
     })
     .post(requireWithUserAsync, async(req,res)=>{
         const validDeckID = parseInt(req.params.deckID);
-        const idendicalVote = await removeDuplicateVote(req.user!.id,validDeckID, req.body.isUpVote)
-        if(idendicalVote){
+        const identicalVote = await removeDuplicateVote(req.user!.id,validDeckID, req.body.isUpVote)
+        if(identicalVote){
             const totalVotes = await countVotes(validDeckID);
             return res.json({votes:totalVotes});
         }
-        // TODO REFACTOR THIS IS INEFFICENT AS IT DELETES THE IDENTICAL VOTE
+        // TODO REFACTOR THIS IS INEFFICIENT AS IT DELETES THE IDENTICAL VOTE
         const deck = await Deck.findOne(validDeckID,{
             relations:["votes"]
         })
         if(!deck){
             return res.status(403).send("Error: Deck not found");
         }
+        
         const vote = new VotesDeck();
         vote.user = req.user!;
         vote.isUpVote = req.body.isUpVote;
@@ -98,7 +99,8 @@ votesRouter.route("/votes/byDeckID/:deckID")
         if(deletedVote.affected === 0){
             return res.status(500).send("Error: Vote not deleted");
         }
-        return res.json(vote);
+        const parsedRes = await res.json();
+        return res.json(parsedRes);
     })
 
 export {votesRouter};
