@@ -14,7 +14,7 @@ deckRouter.route("/deck/byID/:id")
         const verifiedDeckNumber = parseInt(req.params.id);        
 
         const deck: IDeck|undefined = await getRepository(Deck).createQueryBuilder("deck")
-        .select(["deck.id", "deck.title", "deck.description","user.id","user.username"/*,"votes.isUpVote"*/])
+        .select(["deck.id", "deck.title", "deck.subject", "deck.description", "user.id", "user.username"/*,"votes.isUpVote"*/])
         .leftJoin("deck.user", "user")
         //.leftJoin("deck.votes", "votes")
         .where("deck.id = :deckID and (deck.public = true or user.id = :userID)",{deckID: verifiedDeckNumber, userID: req.user? req.user.id : -1})
@@ -56,6 +56,7 @@ deckRouter.post(("/deck/add"),requireWithUserAsync,async(req,res)=>{
 
     const deck = new Deck();
     deck.title = req.body.title;    // Verify that this will be protected against a sql injection!
+    deck.subject = req.body.subject;
     deck.description = req.body.description;
     deck.public = req.body.public;
 
@@ -81,7 +82,7 @@ deckRouter.get("/deck/allByUserID/:userID",withUserAsync,async(req,res)=>{
 
 deckRouter.get("/deck/popular", withUserAsync ,async(req,res)=>{
     const popularDecks:IDeck[] = await getRepository(Deck).createQueryBuilder("deck")
-    .select(["deck.id", "deck.title", "deck.description","user.id","user.username"/*,"votes.isUpVote"*/])
+    .select(["deck.id", "deck.title", "deck.subject", "deck.description", "user.id", "user.username"/*,"votes.isUpVote"*/])
     .leftJoin("deck.user", "user")
     //.leftJoin("deck.votes", "votes")
     .where("deck.public = true")
@@ -96,7 +97,7 @@ deckRouter.get("/deck/popular", withUserAsync ,async(req,res)=>{
 
 deckRouter.get("/deck/owner", requireWithUserAsync, async(req,res)=>{
     const decks: IDeck[] = await getRepository(Deck).createQueryBuilder("deck")
-    .select(["deck.id", "deck.title", "deck.description","user.id","user.username"/*,"votes.isUpVote"*/])
+    .select(["deck.id", "deck.title", "deck.subject", "deck.description","user.id","user.username"/*,"votes.isUpVote"*/])
     .leftJoin("deck.user", "user")
     .where("deck.user.id = :userID",{userID: req.user?.id? req.user.id:-1})
     .getMany();

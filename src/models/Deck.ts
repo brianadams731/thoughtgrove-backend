@@ -12,6 +12,9 @@ class Deck extends BaseEntity{
     @Column({nullable: false})
     title: string;
 
+    @Column({nullable:true})
+    subject: string;
+    
     @Column({nullable: true})
     description: string;
 
