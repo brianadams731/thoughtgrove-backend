@@ -13,7 +13,7 @@ userRouter.get("/user/byID/:id", async(req,res)=>{
     return res.json(person);
 })
 
-userRouter.get("/owner", requireWithUserAsync ,async(req,res)=>{
+userRouter.get("/user/owner", requireWithUserAsync ,async(req,res)=>{
     return res.json({
         id:req.user?.id,
         email: req.user?.email,

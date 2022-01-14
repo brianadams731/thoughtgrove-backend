@@ -1,7 +1,7 @@
 import { Deck } from "../models/Deck";
 
-interface IPopularDeck extends Deck{
+interface IDeck extends Deck{
     deckRelation?: string;
 }
 
-export type { IPopularDeck };
+export type { IDeck };

@@ -4,36 +4,43 @@ import { Deck } from "../models/Deck";
 import { requireWithUserAsync } from "../middleware/requireWithUserAsync";
 import {withUserAsync} from "../middleware/withUserAsync"
 import { getRepository } from "typeorm";
-import { IPopularDeck } from "../responseInterfaces/IPopularDeck";
+import { IDeck } from "../responseInterfaces/IDeck";
+import { mapDeckRelation } from "../utils/mapDeckRelation";
 
 const deckRouter = express.Router();
 
 deckRouter.route("/deck/byID/:id")
     .get(withUserAsync,async(req,res)=>{
-        const varifiedDeckNumber = parseInt(req.params.id);
-        const deck = await Deck.findOne(varifiedDeckNumber, {
-            relations:["user"]
-        })
+        const verifiedDeckNumber = parseInt(req.params.id);        
+
+        const deck: IDeck|undefined = await getRepository(Deck).createQueryBuilder("deck")
+        .select(["deck.id", "deck.title", "deck.description","user.id","user.username"/*,"votes.isUpVote"*/])
+        .leftJoin("deck.user", "user")
+        //.leftJoin("deck.votes", "votes")
+        .where("deck.id = :deckID and (deck.public = true or user.id = :userID)",{deckID: verifiedDeckNumber, userID: req.user? req.user.id : -1})
+        .getOne()
+        
         if(!deck){
             return res.status(500).send("Error: Deck not found")
         }
-        if(deck.public || req.user?.id === deck.user.id){
-            return res.json(deck)            
-        }
-        return res.status(401).send("Error: Invalid Crendentals");
-        
+
+        deck.deckRelation = mapDeckRelation(deck, req.user);
+        return res.json(deck) ;
+
     }).delete(requireWithUserAsync, async(req,res)=>{
-        const varifiedDeckNumber = parseInt(req.params.id);
-        const deck = await Deck.findOne(varifiedDeckNumber, {
+        const verifiedDeckNumber = parseInt(req.params.id);
+        const deck = await Deck.findOne(verifiedDeckNumber, {
             relations:["user"]
         })
         if(req.user?.id !== deck?.user.id){
             return res.status(401).send("Error: Invalid Credentials");
         }
-        const deletedDeck = await Deck.delete(varifiedDeckNumber);
+
+        const deletedDeck = await Deck.delete(verifiedDeckNumber);
         if(deletedDeck.affected === 0){
             return res.status(500).send("Error: Could not delete deck")
         }
+
         return res.json(deck);
     })
 
@@ -48,8 +55,8 @@ deckRouter.post(("/deck/add"),requireWithUserAsync,async(req,res)=>{
     }
 
     const deck = new Deck();
-    deck.title = req.body.title;    // Varify that this will be protected against a sql injection!
-    deck.title = req.body.description;
+    deck.title = req.body.title;    // Verify that this will be protected against a sql injection!
+    deck.description = req.body.description;
     deck.public = req.body.public;
 
     user.decks.push(deck);
@@ -59,10 +66,9 @@ deckRouter.post(("/deck/add"),requireWithUserAsync,async(req,res)=>{
 
 deckRouter.get("/deck/allByUserID/:userID",withUserAsync,async(req,res)=>{
     const validUserID = parseInt(req.params.userID);
-    const userSearched = await User.findOne(validUserID, {
+        const userSearched = await User.findOne(validUserID, {
         relations:['decks']
     });
-
     if(!userSearched){
         return res.status(500).send("Error: Invalid ID");
     }
@@ -74,7 +80,7 @@ deckRouter.get("/deck/allByUserID/:userID",withUserAsync,async(req,res)=>{
 })
 
 deckRouter.get("/deck/popular", withUserAsync ,async(req,res)=>{
-    const popularDecks:IPopularDeck[] = await getRepository(Deck).createQueryBuilder("deck")
+    const popularDecks:IDeck[] = await getRepository(Deck).createQueryBuilder("deck")
     .select(["deck.id", "deck.title", "deck.description","user.id","user.username"/*,"votes.isUpVote"*/])
     .leftJoin("deck.user", "user")
     //.leftJoin("deck.votes", "votes")
@@ -82,14 +88,24 @@ deckRouter.get("/deck/popular", withUserAsync ,async(req,res)=>{
     .getMany()
 
     popularDecks.forEach((item)=>{
-        if(item.user.id === req.user?.id){
-            item.deckRelation = "owner" 
-        }else{
-            item.deckRelation = "guest"
-        }
+        item.deckRelation = mapDeckRelation(item,req.user);
     })
-    
+
     return res.json(popularDecks);
 })
 
+deckRouter.get("/deck/owner", requireWithUserAsync, async(req,res)=>{
+    const decks: IDeck[] = await getRepository(Deck).createQueryBuilder("deck")
+    .select(["deck.id", "deck.title", "deck.description","user.id","user.username"/*,"votes.isUpVote"*/])
+    .leftJoin("deck.user", "user")
+    .where("deck.user.id = :userID",{userID: req.user?.id? req.user.id:-1})
+    .getMany();
+
+    decks.forEach((item)=>{
+        item.deckRelation = "owner";
+    })
+
+    return res.json(decks);
+
+})
 export {deckRouter};
