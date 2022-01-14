@@ -7,7 +7,7 @@ import { getRepository } from "typeorm";
 import { IDeck } from "../responseInterfaces/IDeck";
 import { mapDeckRelation } from "../utils/mapDeckRelation";
 import { calcDeckVotesAsync } from "../utils/calcDeckVotes";
-import { determineUserVotedOnDeckAsync } from "../utils/detrmineUserVotedOnDeck";
+import { determineUserVotedOnDeckAsync, VoteState } from "../utils/detrmineUserVotedOnDeck";
 
 const deckRouter = express.Router();
 
@@ -30,8 +30,8 @@ deckRouter.route("/deck/byID/:id")
             count: await calcDeckVotesAsync(deck.id),
             voteCast: await determineUserVotedOnDeckAsync(req.user?.id)
         }
-
         return res.json(deck) ;
+
     }).delete(requireWithUserAsync, async(req,res)=>{
         const verifiedDeckNumber = parseInt(req.params.id);
         const deck = await Deck.findOne(verifiedDeckNumber, {
@@ -86,10 +86,10 @@ deckRouter.get("/deck/allByUserID/:userID",withUserAsync,async(req,res)=>{
 })
 
 deckRouter.get("/deck/popular", withUserAsync ,async(req,res)=>{
+    // TODO ADD VOTE COUNTER
     const popularDecks:IDeck[] = await getRepository(Deck).createQueryBuilder("deck")
-    .select(["deck.id", "deck.title", "deck.subject", "deck.description", "user.id", "user.username"/*,"votes.isUpVote"*/])
+    .select(["deck.id", "deck.title", "deck.subject", "deck.description", "user.id", "user.username"])
     .leftJoin("deck.user", "user")
-    //.leftJoin("deck.votes", "votes")
     .where("deck.public = true")
     .getMany()
 
@@ -97,12 +97,21 @@ deckRouter.get("/deck/popular", withUserAsync ,async(req,res)=>{
         item.deckRelation = mapDeckRelation(item,req.user);
     })
 
+    //TODO: this is inefficient implement a better solution
+    for(const deck of popularDecks){
+        deck.vote = {
+            count: await calcDeckVotesAsync(deck.id),
+            voteCast: VoteState.NotVoted, // this value is not used by this endpoint
+        }
+    }
+
     return res.json(popularDecks);
 })
 
 deckRouter.get("/deck/owner", requireWithUserAsync, async(req,res)=>{
+    // TODO ADD VOTE COUNTER
     const decks: IDeck[] = await getRepository(Deck).createQueryBuilder("deck")
-    .select(["deck.id", "deck.title", "deck.subject", "deck.description","user.id","user.username"/*,"votes.isUpVote"*/])
+    .select(["deck.id", "deck.title", "deck.subject", "deck.description","user.id","user.username"])
     .leftJoin("deck.user", "user")
     .where("deck.user.id = :userID",{userID: req.user?.id? req.user.id:-1})
     .getMany();
@@ -111,6 +120,15 @@ deckRouter.get("/deck/owner", requireWithUserAsync, async(req,res)=>{
         item.deckRelation = "owner";
     })
 
+    //TODO: this is inefficient implement a better solution, look at popular decks
+    for(const deck of decks){
+        deck.vote = {
+            count: await calcDeckVotesAsync(deck.id),
+            voteCast: await determineUserVotedOnDeckAsync(req.user?.id),
+        }
+    }
+    
+    console.log(decks);
     return res.json(decks);
 
 })

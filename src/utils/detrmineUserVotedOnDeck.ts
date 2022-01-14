@@ -16,7 +16,6 @@ const determineUserVotedOnDeckAsync = async(userID?:number):Promise<VoteState> =
     .where("votes.userId = :userID",{userID})
     .getOne();
 
-    console.log(upVote)
     if(upVote === undefined){
         return VoteState.NotVoted
     }
