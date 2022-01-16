@@ -15,7 +15,7 @@ deckRouter.route("/deck/byID/:id")
         const verifiedDeckNumber = parseInt(req.params.id);        
 
         const deck: IDeck|undefined = await getRepository(Deck).createQueryBuilder("deck")
-        .select(["deck.id", "deck.title", "deck.subject", "deck.description", "deck.voteCount","user.id", "user.username"/*,"votes.isUpVote"*/])
+        .select(["deck.id", "deck.title", "deck.subject", "deck.description", "deck.voteCount","user.id", "user.username"])
         .leftJoin("deck.user", "user")
         .where("deck.id = :deckID and (deck.public = true or user.id = :userID)",{deckID: verifiedDeckNumber, userID: req.user? req.user.id : -1})
         .getOne()
@@ -23,7 +23,6 @@ deckRouter.route("/deck/byID/:id")
         if(!deck){
             return res.status(500).send("Error: Deck not found")
         }
-
         deck.deckRelation = mapDeckRelation(deck, req.user);
         deck.vote = {
             count: deck.voteCount,
@@ -42,11 +41,30 @@ deckRouter.route("/deck/byID/:id")
 
         const deletedDeck = await Deck.delete(verifiedDeckNumber);
         if(deletedDeck.affected === 0){
-            return res.status(500).send("Error: Could not delete deck")
+            return res.status(500).send("Error: Could not delete deck");
         }
 
         return res.json(deck);
+    }).patch(requireWithUserAsync, async(req,res)=>{
+        const verifiedDeckNumber = parseInt(req.params.id);
+        const deck = await getRepository(Deck).createQueryBuilder("deck")
+        .leftJoin("deck.user", "user")
+        .where("deck.id = :deckID and user.id = :userID",{deckID: verifiedDeckNumber, userID: req.user? req.user.id : -1})
+        .getOne() 
+
+        if(!deck){
+            console.log("on deck")
+            return res.status(500).send("Error: Could not find deck");
+        }
+
+        deck.subject = req.body.subject;
+        deck.title = req.body.title;
+        deck.description = req.body.description;
+        deck.public = req.body.public;
+        deck.save();
+        return res.status(200).send();
     })
+
 
 deckRouter.post(("/deck/add"),requireWithUserAsync,async(req,res)=>{
     const userID = req.user?.id;

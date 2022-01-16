@@ -39,6 +39,23 @@ cardRouter.route('/card/byID/:cardID')
             return res.status(500).send("Error: Could not delete card");
         }
         return res.json(card);
+    }).patch(requireWithUserAsync, async(req, res)=>{
+        const validCardID = parseInt(req.params.cardID);
+        const card = await getRepository(Card).createQueryBuilder("card")
+        .leftJoin("card.deck", "deck")
+        .leftJoin("deck.user","user")
+        .where("card.id = :cardID and user.id = :userID",{cardID: validCardID, userID: req.user? req.user.id : -1})
+        .getOne() 
+
+        if(!card){
+            console.log("Card not found")
+            return res.status(500).send("Error: Card not found");
+        }
+
+        card.prompt = req.body.prompt;
+        card.answer = req.body.answer;
+        card.save();
+        return res.status(200).send();
     })
 
 
