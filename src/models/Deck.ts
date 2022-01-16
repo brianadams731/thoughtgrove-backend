@@ -15,6 +15,9 @@ class Deck extends BaseEntity{
     @Column({nullable:true})
     subject: string;
     
+    @Column({nullable: false, default: 0})
+    voteCount: number;
+
     @Column({nullable: true})
     description: string;
 

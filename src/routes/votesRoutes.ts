@@ -5,80 +5,58 @@ import { VotesDeck } from "../models/VotesDeck";
 
 const votesRouter = express.Router();
 
-const countVotes = async (deckID:number):Promise<number> =>{
-    const upVotes = await VotesDeck.count({
-        where:{
-            isUpVote:true,
-            deck:{
-                id:deckID
-            }
-        }
-    })
-    const downVotes = await VotesDeck.count({
-        where:{
-            isUpVote:false,
-            deck:{
-                id:deckID
-            }
-        }
-    })
-    return upVotes - downVotes;
-}
-
-// Checks if user already voted, if so removes the vote, if vote is identical returns true (double clicked upvote or downvote)
-const removeDuplicateVote = async(userID:number, deckID:number, voteType:boolean):Promise<boolean> =>{
-    const vote = await VotesDeck.findOne({
-        where:{
-            deck:{
-                id: deckID
-            },
-            user:{
-                id: userID
-            }
-        }
-    })
-    if(!vote){
-        return false
-    }
-    // TODO REFACTOR!!!!
-    const deletedVote = await VotesDeck.delete(vote.id);
-    if(deletedVote.affected === 0){
-        console.log("ERROR!!! VOTE NOTE DELETED")
-    }
-    if(vote.isUpVote === voteType){
-        return true;
-    }
-    return false;
-}
-
 votesRouter.route("/votes/byDeckID/:deckID")
     .get(async(req,res)=>{
         const validDeckID = parseInt(req.params.deckID);
-        const totalVotes = await countVotes(validDeckID);
+        const deck = await Deck.findOne(validDeckID);
+        if(!deck){
+            return res.status(500).send("Error: Deck not found")
+        }
+        const totalVotes = deck.voteCount;
         return res.json({votes:totalVotes});
     })
     .post(requireWithUserAsync, async(req,res)=>{
         const validDeckID = parseInt(req.params.deckID);
-        const identicalVote = await removeDuplicateVote(req.user!.id,validDeckID, req.body.isUpVote)
-        if(identicalVote){
-            const totalVotes = await countVotes(validDeckID);
-            return res.json({votes:totalVotes});
-        }
-        // TODO REFACTOR THIS IS INEFFICIENT AS IT DELETES THE IDENTICAL VOTE
-        const deck = await Deck.findOne(validDeckID,{
+        let vote = await VotesDeck.findOne(undefined,{
+            where:{
+                userId:req.user!.id,
+                deck:{
+                    id:validDeckID
+                }
+            }
+        });
+        let deck = await Deck.findOne(validDeckID,{
             relations:["votes"]
         })
         if(!deck){
-            return res.status(403).send("Error: Deck not found");
+            return res.status(500).send("Error: Deck not found");
         }
-        
-        const vote = new VotesDeck();
-        vote.user = req.user!;
-        vote.isUpVote = req.body.isUpVote;
-        deck.votes.push(vote);
-        await deck.save();
-        const totalVotes = await countVotes(validDeckID);
-        return res.json({votes:totalVotes});
+        if(!vote){
+            vote = new VotesDeck();
+            vote.user = req.user!;
+            vote.isUpVote = req.body.isUpVote!;
+            const incrementValue = vote.isUpVote? 1:-1;
+            deck.voteCount = deck.voteCount + incrementValue;
+            deck.votes.push(vote);
+            await deck.save();
+            return res.status(200).json({
+                isUpVote:vote.isUpVote,
+                count: deck.voteCount
+            });
+        }
+        if(vote.isUpVote === req.body.isUpVote){
+            return res.status(401).send("Error: Vote Already Cast")
+        }else{
+            vote.isUpVote = req.body.isUpVote;
+            const incrementValue = vote.isUpVote? 2:-2;
+            deck.voteCount = deck.voteCount + incrementValue;
+            vote.save();
+            deck.save();
+            return res.status(200).json({
+                isUpVote:vote.isUpVote,
+                count: deck.voteCount
+            });
+        }
     })
     .delete(requireWithUserAsync, async(req,res)=>{
         const validDeckID = parseInt(req.params.deckID)
@@ -97,9 +75,22 @@ votesRouter.route("/votes/byDeckID/:deckID")
         }
         const deletedVote = await VotesDeck.delete(vote.id);
         if(deletedVote.affected === 0){
+            console.log("internal error")
             return res.status(500).send("Error: Vote not deleted");
         }
-        return res.status(200);
+        let deck = await Deck.findOne(validDeckID,{
+            relations:["votes"]
+        })
+        if(!deck){
+            console.log("internal error")
+            return res.status(500).send("Error: Deck not found");
+        }
+        const incrementValue = vote.isUpVote?-1:1;
+        deck.voteCount = deck.voteCount + incrementValue;
+        deck.save();
+        return res.status(200).json({
+            count:deck.voteCount
+        });
     })
 
 export {votesRouter};

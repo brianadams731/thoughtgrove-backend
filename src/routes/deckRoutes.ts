@@ -6,7 +6,6 @@ import {withUserAsync} from "../middleware/withUserAsync"
 import { getRepository } from "typeorm";
 import { IDeck } from "../responseInterfaces/IDeck";
 import { mapDeckRelation } from "../utils/mapDeckRelation";
-import { calcDeckVotesAsync } from "../utils/calcDeckVotes";
 import { determineUserVotedOnDeckAsync, VoteState } from "../utils/detrmineUserVotedOnDeck";
 
 const deckRouter = express.Router();
@@ -16,7 +15,7 @@ deckRouter.route("/deck/byID/:id")
         const verifiedDeckNumber = parseInt(req.params.id);        
 
         const deck: IDeck|undefined = await getRepository(Deck).createQueryBuilder("deck")
-        .select(["deck.id", "deck.title", "deck.subject", "deck.description", "user.id", "user.username"/*,"votes.isUpVote"*/])
+        .select(["deck.id", "deck.title", "deck.subject", "deck.description", "deck.voteCount","user.id", "user.username"/*,"votes.isUpVote"*/])
         .leftJoin("deck.user", "user")
         .where("deck.id = :deckID and (deck.public = true or user.id = :userID)",{deckID: verifiedDeckNumber, userID: req.user? req.user.id : -1})
         .getOne()
@@ -27,8 +26,8 @@ deckRouter.route("/deck/byID/:id")
 
         deck.deckRelation = mapDeckRelation(deck, req.user);
         deck.vote = {
-            count: await calcDeckVotesAsync(deck.id),
-            voteCast: await determineUserVotedOnDeckAsync(req.user?.id)
+            count: deck.voteCount,
+            voteCast: await determineUserVotedOnDeckAsync(deck.id, req.user?.id)
         }
         return res.json(deck) ;
 
@@ -64,7 +63,7 @@ deckRouter.post(("/deck/add"),requireWithUserAsync,async(req,res)=>{
     deck.subject = req.body.subject;
     deck.description = req.body.description;
     deck.public = req.body.public;
-
+    deck.voteCount = 0;
     user.decks.push(deck);
     await user.save();
     return res.json(deck);
@@ -86,9 +85,8 @@ deckRouter.get("/deck/allByUserID/:userID",withUserAsync,async(req,res)=>{
 })
 
 deckRouter.get("/deck/popular", withUserAsync ,async(req,res)=>{
-    // TODO ADD VOTE COUNTER
     const popularDecks:IDeck[] = await getRepository(Deck).createQueryBuilder("deck")
-    .select(["deck.id", "deck.title", "deck.subject", "deck.description", "user.id", "user.username"])
+    .select(["deck.id", "deck.title", "deck.subject", "deck.description", "deck.voteCount", "user.id", "user.username"])
     .leftJoin("deck.user", "user")
     .where("deck.public = true")
     .getMany()
@@ -97,10 +95,9 @@ deckRouter.get("/deck/popular", withUserAsync ,async(req,res)=>{
         item.deckRelation = mapDeckRelation(item,req.user);
     })
 
-    //TODO: this is inefficient implement a better solution
     for(const deck of popularDecks){
         deck.vote = {
-            count: await calcDeckVotesAsync(deck.id),
+            count: deck.voteCount,
             voteCast: VoteState.NotVoted, // this value is not used by this endpoint
         }
     }
@@ -109,9 +106,8 @@ deckRouter.get("/deck/popular", withUserAsync ,async(req,res)=>{
 })
 
 deckRouter.get("/deck/owner", requireWithUserAsync, async(req,res)=>{
-    // TODO ADD VOTE COUNTER
     const decks: IDeck[] = await getRepository(Deck).createQueryBuilder("deck")
-    .select(["deck.id", "deck.title", "deck.subject", "deck.description","user.id","user.username"])
+    .select(["deck.id", "deck.title", "deck.subject", "deck.voteCount","deck.description","user.id","user.username"])
     .leftJoin("deck.user", "user")
     .where("deck.user.id = :userID",{userID: req.user?.id? req.user.id:-1})
     .getMany();
@@ -120,11 +116,10 @@ deckRouter.get("/deck/owner", requireWithUserAsync, async(req,res)=>{
         item.deckRelation = "owner";
     })
 
-    //TODO: this is inefficient implement a better solution, look at popular decks
     for(const deck of decks){
         deck.vote = {
-            count: await calcDeckVotesAsync(deck.id),
-            voteCast: await determineUserVotedOnDeckAsync(req.user?.id),
+            count: deck.voteCount,
+            voteCast: await determineUserVotedOnDeckAsync(deck.id, req.user?.id),
         }
     }    
     return res.json(decks);

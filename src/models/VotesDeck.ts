@@ -12,6 +12,9 @@ class VotesDeck extends BaseEntity{
 
     @Column({nullable: false})
     userId: number;
+
+    @Column({nullable: false})
+    deckId: number;
     
     @ManyToOne(()=> Deck, deck => deck.votes, {
         eager:false, // Will not fetch user every time the deck is fetched
