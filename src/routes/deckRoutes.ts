@@ -67,7 +67,7 @@ deckRouter.post(("/deck/add"),requireWithUserAsync,async(req,res)=>{
 
     user.decks.push(deck);
     await user.save();
-    return res.json(user);
+    return res.json(deck);
 })
 
 deckRouter.get("/deck/allByUserID/:userID",withUserAsync,async(req,res)=>{
@@ -126,9 +126,7 @@ deckRouter.get("/deck/owner", requireWithUserAsync, async(req,res)=>{
             count: await calcDeckVotesAsync(deck.id),
             voteCast: await determineUserVotedOnDeckAsync(req.user?.id),
         }
-    }
-    
-    console.log(decks);
+    }    
     return res.json(decks);
 
 })

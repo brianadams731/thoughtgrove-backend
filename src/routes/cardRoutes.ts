@@ -78,7 +78,7 @@ cardRouter.route('/card/byDeckID/:deckID')
 
         deck.cards.push(card);
         await deck.save();
-        return res.json(deck);
+        return res.json(card);
     })
 
 export {cardRouter};

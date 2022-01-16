@@ -99,8 +99,7 @@ votesRouter.route("/votes/byDeckID/:deckID")
         if(deletedVote.affected === 0){
             return res.status(500).send("Error: Vote not deleted");
         }
-        const parsedRes = await res.json();
-        return res.json(parsedRes);
+        return res.status(200);
     })
 
 export {votesRouter};
