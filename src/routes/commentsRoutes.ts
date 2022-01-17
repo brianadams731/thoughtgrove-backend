@@ -1,6 +1,7 @@
 import express from "express";
 import { getRepository } from "typeorm";
 import { requireWithUserAsync } from "../middleware/requireWithUserAsync";
+import { withUserAsync } from "../middleware/withUserAsync";
 import { CommentDeck } from "../models/CommentDeck";
 import { Deck } from "../models/Deck";
 import { User } from "../models/User";
@@ -9,21 +10,26 @@ const commentRouter = express.Router();
 
 commentRouter.route("/comments/byID/:commentID")
     .delete(requireWithUserAsync,async(req,res)=>{
-        const validCommentID = parseInt(req.params.commentID);
-        const comment = await CommentDeck.findOne(validCommentID, {
-            relations:["user"]
-        })
-        if(!comment || comment.user.id !== req.user!.id){
-            return res.status(403).send("Error: Invalid Reqest")
+        const validCommentId = parseInt(req.params.commentID);
+        const comment = await getRepository(CommentDeck).createQueryBuilder("comment")
+        .select(["comment.id"])
+        .where("comment.id = :commentId and comment.user.id = :userId",{commentId:validCommentId, userId: req.user?req.user.id:-1})
+        .leftJoin("comment.user", "user")
+        .getOne()
+
+        if(!comment){
+            return res.status(403).send("Error: User not authorized");
         }
+
         const deleted = await CommentDeck.delete(comment.id);
         if(deleted.affected === 0){
             return res.status(500).send("Error: Could not delete comment");
         }
+
         return res.json(comment);
     })
 
-commentRouter.get("/comments/byDeckID/:deckID",async(req,res)=>{
+commentRouter.get("/comments/byDeckID/:deckID", withUserAsync,async(req,res)=>{
     const validDeckID = parseInt(req.params.deckID);
     const comments = await getRepository(CommentDeck).createQueryBuilder("comment")
     .select(["comment.content","comment.id","user.username","user.id"])
@@ -36,10 +42,15 @@ commentRouter.get("/comments/byDeckID/:deckID",async(req,res)=>{
         return res.status(500).send("Error: Invalid Deck")
     }
     
-    return res.json({
+    const retComments = {
         deckId: validDeckID,
-        comments
-    });
+        comments: comments.map(item => ({
+            ...item,
+            userOwnsComment: req.user?.id?(item.user.id === req.user?.id):false
+        }))
+    }
+
+    return res.json(retComments);
 })
 
 
