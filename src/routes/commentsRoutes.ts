@@ -56,7 +56,7 @@ commentRouter.get("/comments/byUserID/:userID",async(req,res)=>{
 })
 
 commentRouter.post("/comments/addComment/:deckID", requireWithUserAsync, async(req,res)=>{
-    if(req.body.content === ""){
+    if(!req.body.content){
         return res.status(400).send("Error: No Content in Comment")
     }
     const validDeckID = parseInt(req.params.deckID);
