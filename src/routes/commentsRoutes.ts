@@ -1,4 +1,5 @@
 import express from "express";
+import { getRepository } from "typeorm";
 import { requireWithUserAsync } from "../middleware/requireWithUserAsync";
 import { CommentDeck } from "../models/CommentDeck";
 import { Deck } from "../models/Deck";
@@ -24,13 +25,21 @@ commentRouter.route("/comments/byID/:commentID")
 
 commentRouter.get("/comments/byDeckID/:deckID",async(req,res)=>{
     const validDeckID = parseInt(req.params.deckID);
-    const deck = await Deck.findOne(validDeckID,{
-        relations:["comments"]
-    })
-    if(!deck){
+    const comments = await getRepository(CommentDeck).createQueryBuilder("comment")
+    .select(["comment.content","comment.id","user.username","user.id"])
+    .where("comment.deck.id = :deckId",{deckId:validDeckID})
+    .leftJoin("comment.user", "user")
+    .leftJoin("comment.deck","deck")
+    .getMany()
+
+    if(!comments){
         return res.status(500).send("Error: Invalid Deck")
     }
-    return res.json(deck.comments); // THIS IS VALID BECAUSE ONLY PUBLIC DECKS CAN HAVE COMMENTS
+    
+    return res.json({
+        deckId: validDeckID,
+        comments
+    });
 })
 
 
@@ -51,6 +60,7 @@ commentRouter.post("/comments/addComment/:deckID", requireWithUserAsync, async(r
     const deck = await Deck.findOne(validDeckID, {
         relations:["comments"]
     })
+
     if(!deck){
         return res.status(500).send("Error: Invalid Deck")
     }
@@ -63,6 +73,6 @@ commentRouter.post("/comments/addComment/:deckID", requireWithUserAsync, async(r
     comment.user = req.user!;
     deck.comments.push(comment);
     await deck.save();
-    return res.json(deck);
+    return res.status(200).json({});
 })
 export { commentRouter };
