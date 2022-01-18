@@ -28,6 +28,26 @@ commentRouter.route("/comments/byID/:commentID")
 
         return res.json(comment);
     })
+    .patch(requireWithUserAsync, async(req,res)=>{
+        const validCommentId = parseInt(req.params.commentID);
+        if(!req.body.content){
+            return res.status(400).send("Error: Malformed comment edit");
+        }
+        
+        const comment = await getRepository(CommentDeck).createQueryBuilder("comment")
+        .select(["comment.id"])
+        .where("comment.id = :commentId and comment.user.id = :userId",{commentId:validCommentId, userId: req.user?req.user.id:-1})
+        .leftJoin("comment.user", "user")
+        .getOne()
+
+        if(!comment){
+            return res.status(403).send("Error: User not authorized");
+        }
+
+        comment.content = req.body.content
+        comment.save();
+        return res.status(200).json({});
+    })
 
 commentRouter.get("/comments/byDeckID/:deckID", withUserAsync,async(req,res)=>{
     const validDeckID = parseInt(req.params.deckID);
