@@ -8,7 +8,7 @@ class GroupUser extends BaseEntity{
     id:number;
 
     @Column({nullable:false})
-    role: "owner"|"moderator"|"user";
+    role: "owner"|"moderator"|"user"|"banned";
 
     @Column({nullable:false})
     userId:number;
