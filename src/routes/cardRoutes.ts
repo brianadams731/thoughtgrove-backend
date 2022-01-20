@@ -41,6 +41,7 @@ cardRouter.route('/card/byID/:cardID')
         return res.json(card);
     }).patch(requireWithUserAsync, async(req, res)=>{
         const validCardID = parseInt(req.params.cardID);
+        // TODO: Refactor this into update style found in comment and discussion route!
         const card = await getRepository(Card).createQueryBuilder("card")
         .leftJoin("card.deck", "deck")
         .leftJoin("deck.user","user")

@@ -1,5 +1,5 @@
 import express from "express";
-import { getRepository } from "typeorm";
+import { getConnection, getRepository } from "typeorm";
 import { requireWithUserAsync } from "../middleware/requireWithUserAsync";
 import { withUserAsync } from "../middleware/withUserAsync";
 import { CommentDeck } from "../models/CommentDeck";
@@ -34,18 +34,16 @@ commentRouter.route("/comments/byID/:commentID")
             return res.status(400).send("Error: Malformed comment edit");
         }
         
-        const comment = await getRepository(CommentDeck).createQueryBuilder("comment")
-        .select(["comment.id"])
-        .where("comment.id = :commentId and comment.user.id = :userId",{commentId:validCommentId, userId: req.user?req.user.id:-1})
-        .leftJoin("comment.user", "user")
-        .getOne()
+        const comment = await getConnection().createQueryBuilder()
+        .update(CommentDeck)
+        .set({content:req.body.content})
+        .where("id = :commentId and user.id = :userId", {commentId:validCommentId, userId: req.user?req.user.id:-1})
+        .execute()
 
-        if(!comment){
-            return res.status(403).send("Error: User not authorized");
+        if(comment.affected === 0){
+            return res.status(403).send("Error: Comment not edited");
         }
 
-        comment.content = req.body.content
-        comment.save();
         return res.status(200).json({});
     })
 

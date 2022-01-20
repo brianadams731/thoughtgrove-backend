@@ -1,4 +1,5 @@
 import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany} from "typeorm";
+import { GroupDiscussion } from "./GroupDiscussion";
 import { GroupUser } from "./GroupUser";
 
 @Entity()
@@ -16,6 +17,9 @@ class Group extends BaseEntity{
         nullable: false
     })
     users: GroupUser[];
+
+    @OneToMany(()=> GroupDiscussion, groupDiscussion => groupDiscussion.group)
+    discussions:GroupDiscussion[];
 }
 
 export { Group };

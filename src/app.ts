@@ -15,6 +15,7 @@ import { logoutRouter } from "./routes/logoutRoutes";
 import { commentRouter } from "./routes/commentsRoutes";
 import { votesRouter } from "./routes/votesRoutes";
 import { groupRoutes } from "./routes/groupRoutes";
+import { discussionRoutes } from "./routes/disscussionRoutes";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use(logoutRouter);
 app.use(commentRouter);
 app.use(votesRouter);
 app.use(groupRoutes);
+app.use(discussionRoutes);
 
 app.get("/", (req,res)=>{
     return res.send("test endpoint")
