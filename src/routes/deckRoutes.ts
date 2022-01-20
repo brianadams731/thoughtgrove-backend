@@ -47,6 +47,7 @@ deckRouter.route("/deck/byID/:id")
         return res.json(deck);
     }).patch(requireWithUserAsync, async(req,res)=>{
         const verifiedDeckNumber = parseInt(req.params.id);
+        // TODO: Refactor this into update style
         const deck = await getRepository(Deck).createQueryBuilder("deck")
         .leftJoin("deck.user", "user")
         .where("deck.id = :deckID and user.id = :userID",{deckID: verifiedDeckNumber, userID: req.user? req.user.id : -1})
