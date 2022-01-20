@@ -1,4 +1,6 @@
-import {Entity, PrimaryGeneratedColumn, Column, BaseEntity} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, BaseEntity,  ManyToOne} from "typeorm";
+import { Group } from "./Group";
+import { User } from "./User";
 
 @Entity()
 class GroupUser extends BaseEntity{
@@ -6,8 +8,23 @@ class GroupUser extends BaseEntity{
     id:number;
 
     @Column({nullable:false})
-    role: string;
+    role: "owner"|"moderator"|"user";
 
+    @Column({nullable:false})
+    userId:number;
+
+    @Column({nullable:false})
+    groupId:number;
+
+    @ManyToOne(()=>User, user => user.userGroups,{
+        nullable:false
+    })
+    user: User;
+
+    @ManyToOne(()=>Group, group => group.users, {
+        nullable:false
+    })
+    group: Group;
 }
 
 export { GroupUser }
