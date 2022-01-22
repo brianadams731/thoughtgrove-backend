@@ -18,14 +18,18 @@ bulletinRoutes.get("/bulletin/byGroupId/:groupId", requiresParsedGroupId, async 
     return res.json(bulletins);
 })
 
-bulletinRoutes.post("/bulletin/add", requireWithUserAsync, requireUserGroupRoleAsync, async(req,res)=>{
+bulletinRoutes.post("/bulletin/add/:groupId",
+requiresParsedGroupId,
+requireWithUserAsync,
+requireUserGroupRoleAsync,
+async(req,res)=>{
     if( !req.userGroupRole || !req.body.message){
         return res.status(500).send("Error: Malformed Request")
     }else if(req.userGroupRole !== "owner" && req.userGroupRole !== "moderator"){
         return res.status(500).send("Error: Unauthorized User")
     }
 
-    const group = await Group.findOne(req.body.groupId,{
+    const group = await Group.findOne(req.groupId,{
         select:["id"]
     })
     if(!group){

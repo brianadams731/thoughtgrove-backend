@@ -7,8 +7,8 @@ import { GroupUser } from "../models/GroupUser";
 
 const groupRoutes = express.Router();
 
-groupRoutes.get("/group/byId/:id", withUserAsync, async(req,res)=>{
-    const validGroupId = parseInt(req.params.id)
+groupRoutes.get("/group/byId/:groupId", withUserAsync, async(req,res)=>{
+    const validGroupId = parseInt(req.params.groupId)
     const group = await getRepository(Group).createQueryBuilder("groups")
     .select(["groups.id", "groups.name", "groups.description"])
     .where("groups.id = :groupId",{groupId: validGroupId})

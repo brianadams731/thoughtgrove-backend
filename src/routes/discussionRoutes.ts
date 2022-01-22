@@ -9,22 +9,22 @@ import { GroupUser } from "../models/GroupUser";
 
 const discussionRoutes = express.Router();
 
-discussionRoutes.post("/discussion/add", requireWithUserAsync, async(req,res)=>{
-    if(!req.user || !req.body.groupId || !req.body.title){
+discussionRoutes.post("/discussion/add/:groupId", requireWithUserAsync, requiresParsedGroupId, async(req,res)=>{
+    if(!req.user || !req.groupId || !req.body.title){
         return res.status(500).send("Error: Malformed Request")
     }
 
     const requestedUser = await getRepository(GroupUser).createQueryBuilder("groupUser")
     .select(["groupUser.role","user.id"])
     .leftJoin("groupUser.user","user")
-    .where("groupUser.userId = :userId and groupUser.groupId = :groupId",{userId:req.user.id, groupId: req.body.groupId})
+    .where("groupUser.userId = :userId and groupUser.groupId = :groupId",{userId:req.user.id, groupId: req.groupId})
     .getOne();
 
     if(!requestedUser || requestedUser.role == "banned"){
         return res.status(500).send("Error: User cannot author discussion")
     }
 
-    const group = await Group.findOne(req.body.groupId,{
+    const group = await Group.findOne(req.groupId,{
         select:["id"]
     })
 
@@ -42,7 +42,8 @@ discussionRoutes.post("/discussion/add", requireWithUserAsync, async(req,res)=>{
 
 discussionRoutes.get("/discussion/byGroupId/:groupId", requiresParsedGroupId, async (req,res)=>{
     const discussions = await getRepository(GroupDiscussion).createQueryBuilder("discussion")
-    .select(["discussion.id", "discussion.title", "discussion.groupId", "author.id", "author.username"])
+    .select(["discussion.id", "discussion.title", "author.id", "author.username"])
+    .loadRelationCountAndMap("discussion.commentCount","discussion.comments","comments")
     .leftJoin("discussion.author","author")
     .where("discussion.groupId = :groupId", {groupId:req.groupId})
     .getMany();
