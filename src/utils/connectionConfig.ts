@@ -8,6 +8,7 @@ import { GroupUser } from "../models/GroupUser";
 import { Group } from "../models/Group";
 import { GroupDiscussion } from "../models/GroupDiscussion";
 import { GroupBulletin } from "../models/GroupBulletin";
+import { DiscussionComment } from "../models/DiscussionComment";
 
 const connectionConfig: ConnectionOptions = {
     type: 'sqlite',
@@ -23,7 +24,8 @@ const connectionConfig: ConnectionOptions = {
         Group,
         GroupUser,
         GroupDiscussion,
-        GroupBulletin
+        GroupBulletin,
+        DiscussionComment
     ]
 }
 

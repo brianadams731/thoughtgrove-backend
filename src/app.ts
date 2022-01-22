@@ -17,6 +17,7 @@ import { votesRouter } from "./routes/votesRoutes";
 import { groupRoutes } from "./routes/groupRoutes";
 import { discussionRoutes } from "./routes/discussionRoutes";
 import { bulletinRoutes } from "./routes/bulletinRoutes";
+import { discussionCommentRoutes } from "./routes/discussionCommentRoutes";
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use(votesRouter);
 app.use(groupRoutes);
 app.use(discussionRoutes);
 app.use(bulletinRoutes);
+app.use(discussionCommentRoutes);
 
 app.get("/", (req,res)=>{
     return res.send("test endpoint")
