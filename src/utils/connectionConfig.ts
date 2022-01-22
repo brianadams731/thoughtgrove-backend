@@ -7,13 +7,24 @@ import { VotesDeck } from "../models/VotesDeck";
 import { GroupUser } from "../models/GroupUser";
 import { Group } from "../models/Group";
 import { GroupDiscussion } from "../models/GroupDiscussion";
+import { GroupBulletin } from "../models/GroupBulletin";
 
 const connectionConfig: ConnectionOptions = {
     type: 'sqlite',
     database: "./devData/dev.db",
     logging: false,
     synchronize: true,
-    entities:[User,Deck,Card, CommentDeck, VotesDeck, Group, GroupUser, GroupDiscussion]
+    entities:[
+        User,
+        Deck,
+        Card,
+        CommentDeck,
+        VotesDeck,
+        Group,
+        GroupUser,
+        GroupDiscussion,
+        GroupBulletin
+    ]
 }
 
 export {connectionConfig};

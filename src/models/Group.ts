@@ -1,4 +1,5 @@
 import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany} from "typeorm";
+import { GroupBulletin } from "./GroupBulletin";
 import { GroupDiscussion } from "./GroupDiscussion";
 import { GroupUser } from "./GroupUser";
 
@@ -20,6 +21,9 @@ class Group extends BaseEntity{
 
     @OneToMany(()=> GroupDiscussion, groupDiscussion => groupDiscussion.group)
     discussions:GroupDiscussion[];
+
+    @OneToMany(()=>GroupBulletin, groupBulletin => groupBulletin.group)
+    bulletins: GroupBulletin[];
 }
 
 export { Group };
