@@ -17,11 +17,13 @@ class GroupUser extends BaseEntity{
     groupId:number;
 
     @ManyToOne(()=>User, user => user.userGroups,{
+        onDelete: "CASCADE",
         nullable:false
     })
     user: User;
 
     @ManyToOne(()=>Group, group => group.users, {
+        onDelete: "CASCADE",
         nullable:false
     })
     group: Group;

@@ -1,6 +1,7 @@
 import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany} from "typeorm";
 import { CommentDeck } from "./CommentDeck";
 import { Deck } from "./Deck";
+import { DiscussionComment } from "./DiscussionComment";
 import { GroupDiscussion } from "./GroupDiscussion";
 import { GroupUser } from "./GroupUser";
 import { VotesDeck } from "./VotesDeck";
@@ -43,8 +44,15 @@ class User extends BaseEntity{
     })
     userGroups: GroupUser[];
 
-    @OneToMany(()=> GroupDiscussion, groupDiscussion => groupDiscussion.author)
+    @OneToMany(()=> GroupDiscussion, groupDiscussion => groupDiscussion.author, {
+        nullable:true
+    })
     authoredDiscussions: GroupDiscussion[]
+
+    @OneToMany(()=> DiscussionComment, discussionComment => discussionComment.author, {
+        nullable:true
+    })
+    authoredDiscussionComments: DiscussionComment[];
 }
 
 export {User};

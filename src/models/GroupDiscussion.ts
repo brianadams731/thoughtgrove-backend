@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";
+import { DiscussionComment } from "./DiscussionComment";
 import { Group } from "./Group";
 import { User } from "./User";
 
@@ -16,8 +17,14 @@ class GroupDiscussion extends BaseEntity{
     @ManyToOne(()=>User, user => user.authoredDiscussions, {nullable:false})
     author:User;
 
-    @ManyToOne(()=>Group, group => group.discussions, {nullable:false})
+    @ManyToOne(()=>Group, group => group.discussions, {
+        onDelete:"CASCADE",
+        nullable:false
+    })
     group:Group;
+
+    @OneToMany(()=>DiscussionComment, discussionComment => discussionComment.discussion)
+    comments: DiscussionComment[];
 }
 
 export { GroupDiscussion }

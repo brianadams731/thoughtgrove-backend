@@ -9,9 +9,10 @@ class GroupBulletin extends BaseEntity{
     @Column({nullable:false})
     message:string;
 
-    
+
     @ManyToOne(()=>Group, group => group.bulletins, {
-        nullable:false
+        onDelete: "CASCADE",
+        nullable: false
     })
     group:Group;
 
