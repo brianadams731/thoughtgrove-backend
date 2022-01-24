@@ -12,7 +12,7 @@ const requireWithUserAsync = async function (req:any,res: Response,next: NextFun
         return
     }
     req.user = user;
-    return next();
+    next();
 }
 
 export {requireWithUserAsync};

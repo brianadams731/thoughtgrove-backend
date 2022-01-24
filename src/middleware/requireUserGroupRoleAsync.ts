@@ -5,8 +5,8 @@ import { GroupUser } from "../models/GroupUser";
 // REQUIRES groupId at top level in request
 // MUST RUN AFTER REQUIRE USER
 const requireUserGroupRoleAsync = async function (req:Request,res: Response,next: NextFunction):Promise<void>{
-    if(!req.userGroupId && req.body.groupId){
-        req.userGroupId = req.body.groupId
+    if(!req.groupId && req.body.groupId){
+        req.groupId = req.body.groupId
     }
     if(!req.user){
         res.status(500).send("Error: User middleware needs to be above");
@@ -15,7 +15,7 @@ const requireUserGroupRoleAsync = async function (req:Request,res: Response,next
     const requester = await getRepository(GroupUser).createQueryBuilder("groupUser")
     .select(["groupUser.role"])
     .leftJoin("groupUser.user","user")
-    .where("groupUser.userId = :userId and groupUser.groupId = :groupId",{userId:req.user.id, groupId: req.userGroupId})
+    .where("groupUser.userId = :userId and groupUser.groupId = :groupId",{userId:req.user.id, groupId: req.groupId})
     .getOne();
 
     if(!requester){
@@ -25,7 +25,7 @@ const requireUserGroupRoleAsync = async function (req:Request,res: Response,next
     
     req.userGroupRole = requester.role;
     req.userGroupId = requester.groupId;
-    return next();
+    next();
 }
 
 export { requireUserGroupRoleAsync }

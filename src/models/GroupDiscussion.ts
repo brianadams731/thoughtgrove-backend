@@ -12,6 +12,9 @@ class GroupDiscussion extends BaseEntity{
     title:string;
 
     @Column({nullable:false})
+    content:string;
+
+    @Column({nullable:false})
     groupId:number;
 
     @ManyToOne(()=>User, user => user.authoredDiscussions, {nullable:false})

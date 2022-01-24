@@ -10,7 +10,7 @@ import { GroupUser } from "../models/GroupUser";
 const discussionRoutes = express.Router();
 
 discussionRoutes.post("/discussion/add/:groupId", requireWithUserAsync, requiresParsedGroupId, async(req,res)=>{
-    if(!req.user || !req.groupId || !req.body.title){
+    if(!req.user || !req.groupId || !req.body.title || !req.body.content){
         return res.status(500).send("Error: Malformed Request")
     }
 
@@ -36,6 +36,7 @@ discussionRoutes.post("/discussion/add/:groupId", requireWithUserAsync, requires
     discussion.author = requestedUser.user;
     discussion.group = group;
     discussion.title = req.body.title;
+    discussion.content = req.body.content;
     await discussion.save();
     return res.status(200).json(discussion);
 })
@@ -47,6 +48,20 @@ discussionRoutes.get("/discussion/byGroupId/:groupId", requiresParsedGroupId, as
     .leftJoin("discussion.author","author")
     .where("discussion.groupId = :groupId", {groupId:req.groupId})
     .getMany();
+
+    return res.json(discussions);
+})
+
+discussionRoutes.get("/discussion/byId/:discussionId", requiresParsedDiscussionId, async (req,res)=>{
+    const discussions = await getRepository(GroupDiscussion).createQueryBuilder("discussion")
+    .select(["discussion.id", "discussion.title", "discussion.content", "author.id", "author.username"])
+    .leftJoin("discussion.author","author")
+    .where("discussion.id = :discussionId", {discussionId:req.discussionId})
+    .getOne();
+
+    if(!discussions){
+        return res.status(500).send("Error: Discussion not found")
+    }
 
     return res.json(discussions);
 })
@@ -82,12 +97,15 @@ discussionRoutes.delete("/discussion/byId/:discussionId", requiresParsedDiscussi
 })
 
 discussionRoutes.patch("/discussion/byId/:discussionId", requiresParsedDiscussionId, requireWithUserAsync, async(req,res)=>{
-    if(!req.body.title){
+    if(!req.body.title || !req.body.content){
         return res.status(500).send("Error: Malformed Request")
     }
     const discussion = await getConnection().createQueryBuilder()
     .update(GroupDiscussion) 
-    .set({title:req.body.title})
+    .set({
+        title:req.body.title,
+        content: req.body.content
+    })
     .where("id = :discussionId and author.id = :authorId",{discussionId: req.discussionId, authorId:req.user?.id})
     .execute();
 
