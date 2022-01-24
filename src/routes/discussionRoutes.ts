@@ -54,7 +54,7 @@ discussionRoutes.get("/discussion/byGroupId/:groupId", requiresParsedGroupId, as
 
 discussionRoutes.get("/discussion/byId/:discussionId", requiresParsedDiscussionId, async (req,res)=>{
     const discussions = await getRepository(GroupDiscussion).createQueryBuilder("discussion")
-    .select(["discussion.id", "discussion.title", "discussion.content", "author.id", "author.username"])
+    .select(["discussion.id", "discussion.title", "discussion.content", "discussion.groupId", "author.id", "author.username"])
     .leftJoin("discussion.author","author")
     .where("discussion.id = :discussionId", {discussionId:req.discussionId})
     .getOne();
