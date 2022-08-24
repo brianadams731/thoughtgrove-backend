@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, CreateDateColumn} from "typeorm";
 import { User } from "./User";
 import {Deck} from "./Deck";
 
@@ -23,6 +23,9 @@ class CommentDeck extends BaseEntity{
         nullable: false
     })
     user: User;
+
+    @CreateDateColumn()
+    createdAt: Date;
 }
 
 export {CommentDeck};

@@ -17,6 +17,7 @@ discussionCommentRoutes.get("/discussion/comment/byDiscussionId/:discussionId", 
     .select(["comment.id", "comment.content", "author.username", "author.id"])
     .where("comment.discussionId = :discussionId", {discussionId: req.discussionId})
     .leftJoin("comment.author", "author")
+    .orderBy("comment.createdAt", "ASC")
     .getMany();
 
     return res.status(200).json(discussionComments);
@@ -25,11 +26,14 @@ discussionCommentRoutes.get("/discussion/comment/byDiscussionId/:discussionId", 
 discussionCommentRoutes.post("/discussion/comment/add/:discussionId", 
 requiresParsedDiscussionId,
 requireWithUserAsync,
-requireUserGroupRoleAsync,
+//requireUserGroupRoleAsync,
 async(req,res)=>{
-    if(req.userGroupRole === "banned" || req.userGroupRole === "none" || !req.userGroupRole || !req.user || !req.discussionId){
+    console.log("here");
+    /*if(req.userGroupRole === "banned" || req.userGroupRole === "none" || !req.userGroupRole){
         return res.status(500).send("Error: User not authorized");
-    }else if(!req.body.content){
+    }*/
+
+    if(!req.body.content || !req.user || !req.discussionId){
         return res.status(500).send("Error: Malformed Request");
     }
 

@@ -1,10 +1,10 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { GroupDiscussion } from "./GroupDiscussion";
 import { User } from "./User";
 
 @Entity()
 class DiscussionComment extends BaseEntity{
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id: number;
 
     @Column({nullable:false})
@@ -24,6 +24,9 @@ class DiscussionComment extends BaseEntity{
         nullable: false
     })
     author: User;
+
+    @CreateDateColumn()
+    createdAt: Date;
 }
 
 export { DiscussionComment };

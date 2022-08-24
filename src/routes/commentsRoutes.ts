@@ -54,6 +54,7 @@ commentRouter.get("/comments/byDeckID/:deckID", withUserAsync,async(req,res)=>{
     .where("comment.deck.id = :deckId",{deckId:validDeckID})
     .leftJoin("comment.user", "user")
     .leftJoin("comment.deck","deck")
+    .orderBy("comment.createdAt", "ASC")
     .getMany()
 
     if(!comments){
