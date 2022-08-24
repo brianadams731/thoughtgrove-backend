@@ -40,7 +40,7 @@ app.use(bulletinRoutes);
 app.use(discussionCommentRoutes);
 
 app.get("/", (req,res)=>{
-    return res.send("test endpoint")
+    
 })
 
 app.listen(process.env.PORT,()=>{
