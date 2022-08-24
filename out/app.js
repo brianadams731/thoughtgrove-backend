@@ -1,0 +1,48 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const dotenv_1 = __importDefault(require("dotenv"));
+const express_session_1 = __importDefault(require("express-session"));
+const typeorm_1 = require("typeorm");
+const sessionConfig_1 = require("./utils/sessionConfig");
+const connectionConfig_1 = require("./utils/connectionConfig");
+const loginRoutes_1 = require("./routes/loginRoutes");
+const registerRoutes_1 = require("./routes/registerRoutes");
+const deckRoutes_1 = require("./routes/deckRoutes");
+const userRoutes_1 = require("./routes/userRoutes");
+const cardRoutes_1 = require("./routes/cardRoutes");
+const logoutRoutes_1 = require("./routes/logoutRoutes");
+const commentsRoutes_1 = require("./routes/commentsRoutes");
+const votesRoutes_1 = require("./routes/votesRoutes");
+const groupRoutes_1 = require("./routes/groupRoutes");
+const discussionRoutes_1 = require("./routes/discussionRoutes");
+const bulletinRoutes_1 = require("./routes/bulletinRoutes");
+const discussionCommentRoutes_1 = require("./routes/discussionCommentRoutes");
+const path_1 = __importDefault(require("path"));
+dotenv_1.default.config();
+const app = (0, express_1.default)();
+(0, typeorm_1.createConnection)(connectionConfig_1.connectionConfig);
+app.use((0, express_session_1.default)(sessionConfig_1.sessionConfig));
+app.use(express_1.default.json());
+app.use(express_1.default.static("public"));
+app.use(loginRoutes_1.loginRouter);
+app.use(registerRoutes_1.registerRouter);
+app.use(deckRoutes_1.deckRouter);
+app.use(userRoutes_1.userRouter);
+app.use(cardRoutes_1.cardRouter);
+app.use(logoutRoutes_1.logoutRouter);
+app.use(commentsRoutes_1.commentRouter);
+app.use(votesRoutes_1.votesRouter);
+app.use(groupRoutes_1.groupRoutes);
+app.use(discussionRoutes_1.discussionRoutes);
+app.use(bulletinRoutes_1.bulletinRoutes);
+app.use(discussionCommentRoutes_1.discussionCommentRoutes);
+app.get("/", (req, res) => {
+    res.sendFile(path_1.default.join(__dirname, "public", "index.html"));
+});
+app.listen(process.env.PORT, () => {
+    console.log(`Server running at http://localhost:${process.env.PORT}/`);
+});
