@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsnd ./src/app.ts",
     "build": "tsc && cpy public out",
-    "start": "node dist/app.js",
+    "start": "node out/app.js",
     "createDevDB": "node ./project_scripts/initSQLiteDB"
   },
   "author": "Brian Adams",
