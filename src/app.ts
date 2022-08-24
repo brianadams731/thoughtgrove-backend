@@ -1,4 +1,5 @@
-import express from "express";
+require("express-async-errors");
+import express, { NextFunction, Response, Request } from "express";
 import dotenv from "dotenv";
 import session from 'express-session';
 import {createConnection} from "typeorm";
@@ -44,6 +45,11 @@ app.use(discussionCommentRoutes);
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.use((err:any, req: Request, res: Response, next: NextFunction) => {
+    console.log(err);
+    return res.status(500).send();
 });
 
 app.listen(process.env.PORT,()=>{
