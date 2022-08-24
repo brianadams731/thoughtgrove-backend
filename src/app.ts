@@ -19,12 +19,15 @@ import { discussionRoutes } from "./routes/discussionRoutes";
 import { bulletinRoutes } from "./routes/bulletinRoutes";
 import { discussionCommentRoutes } from "./routes/discussionCommentRoutes";
 
+import path from "path";
+
 dotenv.config();
 
 const app = express();
 createConnection(connectionConfig);
 app.use(session(sessionConfig));
 app.use(express.json());
+app.use(express.static("public"));
 
 app.use(loginRouter);
 app.use(registerRouter);
@@ -39,9 +42,9 @@ app.use(discussionRoutes);
 app.use(bulletinRoutes);
 app.use(discussionCommentRoutes);
 
-app.get("/", (req,res)=>{
-    
-})
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 app.listen(process.env.PORT,()=>{
     console.log(`Server running at http://localhost:${process.env.PORT}/`)
