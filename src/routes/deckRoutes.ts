@@ -108,6 +108,8 @@ deckRouter.get("/deck/popular", withUserAsync ,async(req,res)=>{
     .select(["deck.id", "deck.title", "deck.subject", "deck.description", "deck.voteCount", "user.id", "user.username"])
     .leftJoin("deck.user", "user")
     .where("deck.public = true")
+    .orderBy("deck.voteCount","DESC")
+    .take(15)
     .getMany()
 
     popularDecks.forEach((item)=>{
