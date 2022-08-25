@@ -144,4 +144,18 @@ deckRouter.get("/deck/owner", requireWithUserAsync, async(req,res)=>{
     return res.json(decks);
 
 })
+
+deckRouter.get("/deck/search/:queryKey", async(req, res)=>{
+    const searchKey = req.params.queryKey;
+    
+    const decks: IDeck[] = await getRepository(Deck).createQueryBuilder("deck")
+    .select(["deck.id", "deck.title", "deck.subject", "deck.description", "deck.voteCount","user.id", "user.username"])
+    .leftJoin("deck.user", "user")
+    .where("LOWER(deck.title) like LOWER(:queryKey)",{queryKey: `%${searchKey}%`})
+    .orderBy("deck.voteCount","DESC")
+    .getMany();
+
+    return res.json(decks);
+})
+
 export {deckRouter};
