@@ -28,7 +28,6 @@ requiresParsedDiscussionId,
 requireWithUserAsync,
 //requireUserGroupRoleAsync,
 async(req,res)=>{
-    console.log("here");
     /*if(req.userGroupRole === "banned" || req.userGroupRole === "none" || !req.userGroupRole){
         return res.status(500).send("Error: User not authorized");
     }*/
