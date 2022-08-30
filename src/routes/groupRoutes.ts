@@ -175,6 +175,22 @@ groupRoutes.delete("/group/user/:groupId", requireWithUserAsync, async(req,res)=
     return res.status(403).send("Error: Unauthorized")
 })
 
+groupRoutes.get("/group/search/:searchKey", async (req,res)=>{    
+    if(!req.params.searchKey){
+        return res.status(400).send();
+    }
+
+    const searchKey = req.params.searchKey;
+    // todo add pagination!
+    const groupList = await getRepository(Group).createQueryBuilder("group")
+    .select(["group.id","group.name","group.description"])
+    .loadRelationCountAndMap('group.userCount', 'group.users')
+    .where("LOWER(group.name) like LOWER(:searchKey)",{searchKey:`%${searchKey}%`})
+    .getMany();
+    
+    return res.json(groupList);
+})
+
 
 type RetUserRole = "owner"|"moderator"|"user"|"none"|"banned";
 interface groupById{

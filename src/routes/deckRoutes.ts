@@ -149,7 +149,9 @@ deckRouter.get("/deck/owner", requireWithUserAsync, async(req,res)=>{
 
 deckRouter.get("/deck/search/:queryKey", async(req, res)=>{
     const searchKey = req.params.queryKey;
-    
+    if(!searchKey){
+        return res.status(400).send();
+    }
     const decks: IDeck[] = await getRepository(Deck).createQueryBuilder("deck")
     .select(["deck.id", "deck.title", "deck.subject", "deck.description", "deck.voteCount","user.id", "user.username"])
     .leftJoin("deck.user", "user")
